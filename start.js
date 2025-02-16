@@ -45,13 +45,15 @@ setTimeout(() => {
     // Khởi chạy Cloudflare Tunnel
     const cloudflaredProcess = exec("cloudflared tunnel --url http://localhost:8080");
 
+    let tunnelUrl = "";
+
     cloudflaredProcess.stdout.on("data", (data) => {
         console.log(`[cloudflared] ${data}`);
 
         // Trích xuất URL từ log của Cloudflare Tunnel
         const urlMatch = data.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
-        if (urlMatch) {
-            const tunnelUrl = urlMatch[0];
+        if (urlMatch && !tunnelUrl) {
+            tunnelUrl = urlMatch[0];
             console.log(`🌐 URL: ${tunnelUrl}`);
             sendToTelegram(tunnelUrl); // Gửi URL về Telegram
         }
