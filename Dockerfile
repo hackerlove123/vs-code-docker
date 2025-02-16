@@ -10,11 +10,7 @@ RUN apt-get update && apt-get install -y curl && \
     npm install -g cloudflared && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Cài đặt các dependencies cần thiết (bao gồm node-fetch)
-COPY package.json /app/package.json
-RUN npm install
-
-# Copy file start.js vào container
+#Copy file start.js vào container
 COPY start.js /app/start.js
 
 # Expose port 8080 cho code-server
