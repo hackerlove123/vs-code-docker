@@ -16,7 +16,7 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh
 # Cài đặt nvm (Node Version Manager)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
-# Thiết lập môi trường cho nvm
+# Thiết lập môi trường cho nvm và cài đặt Node.js
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && \
     nvm install 22.9.0 && \
@@ -24,7 +24,7 @@ RUN . "$NVM_DIR/nvm.sh" && \
     npm install -g npm
 
 # Cài đặt cloudflared
-RUN npm install -g cloudflared
+RUN . "$NVM_DIR/nvm.sh" && npm install -g cloudflared
 
 # Expose port 8080 cho code-server
 EXPOSE 8080
