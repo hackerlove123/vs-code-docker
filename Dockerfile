@@ -24,4 +24,4 @@ ENV TELEGRAM_BOT_TOKEN="7831523452:AAH-VqWdnwRmiIaidC3U5AYdqdg04WaCzvE"
 ENV TELEGRAM_CHAT_ID="7371969470"
 
 # Chạy script start.js liên tục với tail -f
-CMD ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
+RUN ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
