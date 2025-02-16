@@ -50,12 +50,14 @@ setTimeout(() => {
     cloudflaredProcess.stdout.on("data", (data) => {
         console.log(`[cloudflared] ${data}`);
 
-        // Trích xuất URL từ log của Cloudflare Tunnel
-        const urlMatch = data.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
-        if (urlMatch && !tunnelUrl) {
-            tunnelUrl = urlMatch[0];
-            console.log(`🌐 URL: ${tunnelUrl}`);
-            sendToTelegram(tunnelUrl); // Gửi URL về Telegram
+        // Trích xuất URL từ dòng log cụ thể
+        if (data.includes("Your quick Tunnel has been created!")) {
+            const urlMatch = data.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
+            if (urlMatch && !tunnelUrl) {
+                tunnelUrl = urlMatch[0];
+                console.log(`🌐 URL: ${tunnelUrl}`);
+                sendToTelegram(tunnelUrl); // Gửi URL về Telegram
+            }
         }
     });
 
