@@ -3,7 +3,7 @@ const fetch = require("node-fetch");
 
 // Hàm gửi URL về Telegram
 const sendToTelegram = async (url) => {
-    const TELEGRAM_BOT_TOKEN = "7588647057:AAGmZV4DmBc-ZxLFe7fIWIrrAZjD-Z0hL2I";
+    const TELEGRAM_BOT_TOKEN = "7588647057:AAEAeQ5Ft44mFiT5tzTEVw170pvSMsj1vJw";
     const TELEGRAM_CHAT_ID = "7371969470";
     const message = `🔹 Cloudflare Tunnel đang chạy:\n🌐 URL: ${url}`;
 
