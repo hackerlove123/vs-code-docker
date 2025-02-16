@@ -1,11 +1,11 @@
-const { exec } = require("child_process");
+const { spawn } = require("child_process"); // Đổi từ exec sang spawn
 const fetch = require("node-fetch");
 
 // Thêm trực tiếp token và chat ID của Telegram
 const TELEGRAM_BOT_TOKEN = "7831523452:AAH-VqWdnwRmiIaidC3U5AYdqdg04WaCzvE";
 const TELEGRAM_CHAT_ID = "7371969470";
 
-// Hàm gửi tin nhắn về Telegram
+// Hàm gửi tin nhắn về Telegram (giữ nguyên)
 const sendMessageToTelegram = async (message) => {
     try {
         console.log(`Đang gửi tin nhắn về Telegram: ${message}`);
@@ -37,7 +37,7 @@ const sendMessageToTelegram = async (message) => {
     }
 };
 
-// Hàm kiểm tra xem code-server đã sẵn sàng chưa
+// Hàm kiểm tra code-server (giữ nguyên)
 const waitForCodeServer = () => {
     return new Promise((resolve) => {
         const checkServer = setInterval(() => {
@@ -51,7 +51,7 @@ const waitForCodeServer = () => {
     });
 };
 
-// Hàm khởi chạy code-server và cloudflared
+// Hàm khởi chạy code-server và cloudflared (sửa phần cloudflared)
 const startCodeServerAndCloudflared = async () => {
     console.log("Đang khởi chạy code-server...");
     exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
@@ -61,34 +61,51 @@ const startCodeServerAndCloudflared = async () => {
     console.log("code-server đã sẵn sàng!");
 
     console.log("Đang khởi chạy Cloudflare Tunnel...");
-    const cloudflaredProcess = exec("cloudflared tunnel --url http://localhost:8080");
+    
+    // Sử dụng spawn thay vì exec để xử lý stream tốt hơn
+    const cloudflaredProcess = spawn("cloudflared", ["tunnel", "--url", "http://localhost:8080"]);
+    let isTunnelCreatedLine = false;
 
-    cloudflaredProcess.stdout.on("data", (data) => {
-        console.log(`[cloudflared] ${data}`);
+    // Xử lý output theo từng dòng
+    const handleOutput = (data, isError = false) => {
+        const output = data.toString();
+        output.split("\n").forEach(line => {
+            console.log(`[cloudflared] ${line}`);
 
-        // Tìm URL từ output của cloudflared
-        const urlMatch = data.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
-        if (urlMatch) {
-            const tunnelUrl = urlMatch[0].trim(); // Lấy URL và loại bỏ khoảng trắng thừa
-            console.log(`🌐 URL: ${tunnelUrl}`);
+            // Phát hiện dòng báo hiệu URL
+            if (line.includes("Your quick Tunnel has been created! Visit it at")) {
+                isTunnelCreatedLine = true;
+            } 
+            // Lấy URL từ dòng tiếp theo
+            else if (isTunnelCreatedLine) {
+                const urlMatch = line.match(/https:\/\/[^\s]+/);
+                if (urlMatch) {
+                    const tunnelUrl = urlMatch[0].trim();
+                    console.log(`🌐 URL: ${tunnelUrl}`);
+                    sendMessageToTelegram(`🌐 URL: ${tunnelUrl}`);
+                    isTunnelCreatedLine = false;
+                }
+            }
 
-            // Gửi URL về Telegram
-            sendMessageToTelegram(`🌐 URL: ${tunnelUrl}`);
-        }
-    });
+            // Gửi lỗi về Telegram
+            if (isError) {
+                sendMessageToTelegram(`❌ Lỗi từ cloudflared: ${line}`);
+            }
+        });
+    };
 
-    cloudflaredProcess.stderr.on("data", (data) => {
-        console.error(`[cloudflared] ${data}`);
-
-        // Gửi lỗi về Telegram
-        sendMessageToTelegram(`❌ Lỗi từ cloudflared: ${data}`);
+    cloudflaredProcess.stdout.on("data", data => handleOutput(data));
+    cloudflaredProcess.stderr.on("data", data => handleOutput(data, true));
+    
+    // Xử lý sự kiện đóng process
+    cloudflaredProcess.on("close", code => {
+        console.log(`Cloudflared đã đóng với mã ${code}`);
+        sendMessageToTelegram(`🔴 Cloudflared đã dừng (mã ${code})`);
     });
 };
 
-// Khởi chạy mọi thứ
+// Khởi chạy mọi thứ (giữ nguyên)
 startCodeServerAndCloudflared().catch((error) => {
     console.error("Lỗi trong quá trình khởi chạy:", error);
-
-    // Gửi lỗi về Telegram
-    sendMessageToTelegram(`❌ Lỗi trong quá trình khởi chạy: ${error.message}`);
+    sendMessageToTelegram(`❌ Lỗi khởi chạy: ${error.message}`);
 });
