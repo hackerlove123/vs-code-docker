@@ -31,7 +31,7 @@ COPY send_telegram.sh /send_telegram.sh
 RUN chmod +x /send_telegram.sh
 
 # Expose port 8080 cho code-server
-EXPOSE 8080
+EXPOSE 80
 
 # Khởi chạy code-server và cloudflared, sau đó gửi URL về Telegram
-CMD bash -c "/send_telegram.sh & code-server --bind-addr 0.0.0.0:8080 --auth none & cloudflared tunnel --url http://localhost:8080"
+CMD bash -c "/send_telegram.sh & code-server --bind-addr 0.0.0.0:80 --auth none & cloudflared tunnel --url http://localhost:80"
