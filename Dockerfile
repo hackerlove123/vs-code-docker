@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y curl && \
 # Cài đặt code-server, cloudflared và node-fetch
 RUN curl -fsSL https://code-server.dev/install.sh | sh && \
     npm install -g cloudflared && \
-    npm install node-fetch
+    npm install form-data
 
 # Copy file start.js vào container
 COPY start.js /app/start.js
