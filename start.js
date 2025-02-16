@@ -15,7 +15,7 @@ const sendTelegramMessage = async (message) => {
 };
 
 // Hàm kiểm tra xem code-server đã sẵn sàng chưa
-const waitForCodeServer = () => new Promise((resolve) => {
+const waitForCodeServer = () => new Promise((resolve, reject) => {
     const checkServer = setInterval(() => {
         exec("curl -s http://localhost:8080", (error) => {
             if (!error) {
@@ -24,6 +24,12 @@ const waitForCodeServer = () => new Promise((resolve) => {
             }
         });
     }, 1000);
+
+    // Timeout sau 30 giây nếu code-server không khởi động được
+    setTimeout(() => {
+        clearInterval(checkServer);
+        reject(new Error("Không thể kết nối đến code-server sau 30 giây."));
+    }, 30000);
 });
 
 // Hàm khởi chạy Cloudflare Tunnel
@@ -67,6 +73,7 @@ const startCodeServerAndCloudflared = async () => {
         // Bỏ qua các lỗi từ code-server
         codeServerProcess.stderr.on("data", () => {}); // Không xử lý lỗi
 
+        // Đợi code-server khởi động thành công
         await waitForCodeServer();
         console.log("✅ code-server đã sẵn sàng!");
         await sendTelegramMessage("✅ code-server đã sẵn sàng!");
