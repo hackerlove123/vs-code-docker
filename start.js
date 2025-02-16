@@ -5,10 +5,12 @@ const axios = require("axios");
 const waitForCodeServer = () => {
     return new Promise((resolve) => {
         const checkServer = setInterval(() => {
-            exec("curl -s http://localhost:8080", (error) => {
+            exec("curl -s http://localhost:8080", (error, stdout, stderr) => {
                 if (!error) {
                     clearInterval(checkServer);
                     resolve();
+                } else {
+                    console.error("Lỗi khi kiểm tra code-server:", stderr);
                 }
             });
         }, 1000);
@@ -35,7 +37,12 @@ const sendTelegramMessage = async (message) => {
 // Hàm khởi chạy code-server và cloudflared
 const startCodeServerAndCloudflared = async () => {
     console.log("Đang khởi chạy code-server...");
-    exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
+    const codeServerProcess = exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
+
+    // Log lỗi từ code-server
+    codeServerProcess.stderr.on("data", (data) => {
+        console.error(`[code-server error] ${data}`);
+    });
 
     // Đợi code-server khởi chạy
     await waitForCodeServer();
