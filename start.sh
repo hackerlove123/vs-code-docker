@@ -1,34 +1,61 @@
-#!/bin/bash
+const { exec } = require("child_process");
+const fetch = require("node-fetch");
 
-# Khởi chạy code-server trong nền
-code-server --bind-addr 0.0.0.0:8080 --auth none &
+// Khởi chạy code-server
+const codeServerProcess = exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
 
-# Đợi code-server khởi chạy
-sleep 10
+codeServerProcess.stdout.on("data", (data) => {
+    console.log(`[code-server] ${data}`);
+});
 
-# Khởi chạy Cloudflare Tunnel và lấy URL
-echo "Đang khởi chạy Cloudflare Tunnel..."
-TUNNEL_OUTPUT=$(/usr/local/bin/cloudflared tunnel --url http://localhost:8080 2>&1 | tee /var/log/cloudflared.log)
+codeServerProcess.stderr.on("data", (data) => {
+    console.error(`[code-server] ${data}`);
+});
 
-# Trích xuất URL từ log của Cloudflare Tunnel
-TUNNEL_URL=$(echo "$TUNNEL_OUTPUT" | grep -oP 'https://[^\s]+')
+// Đợi code-server khởi chạy
+setTimeout(() => {
+    console.log("Đang khởi chạy Cloudflare Tunnel...");
 
-# Kiểm tra xem có lấy được URL không
-if [ -z "$TUNNEL_URL" ]; then
-    echo "Không thể lấy URL từ Cloudflare Tunnel."
-    exit 1
-fi
+    // Khởi chạy Cloudflare Tunnel
+    const cloudflaredProcess = exec("cloudflared tunnel --url http://localhost:8080");
 
-# Gửi URL về Telegram
-TELEGRAM_BOT_TOKEN="7588647057:AAGmZV4DmBc-ZxLFe7fIWIrrAZjD-Z0hL2I"
-TELEGRAM_CHAT_ID="7371969470"
-MESSAGE="🔹 Cloudflare Tunnel đang chạy:\n🌐 URL: $TUNNEL_URL"
+    let tunnelUrl = "";
 
-curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-    -d chat_id="$TELEGRAM_CHAT_ID" \
-    -d text="$MESSAGE"
+    cloudflaredProcess.stdout.on("data", (data) => {
+        console.log(`[cloudflared] ${data}`);
 
-echo "Đã gửi URL về Telegram: $TUNNEL_URL"
+        // Trích xuất URL từ log của Cloudflare Tunnel
+        const urlMatch = data.match(/https:\/\/[^\s]+/);
+        if (urlMatch && !tunnelUrl) {
+            tunnelUrl = urlMatch[0];
+            console.log(`🌐 URL: ${tunnelUrl}`);
 
-# Giữ container chạy
-tail -f /dev/null
+            // Gửi URL về Telegram
+            const TELEGRAM_BOT_TOKEN = "7588647057:AAGmZV4DmBc-ZxLFe7fIWIrrAZjD-Z0hL2I";
+            const TELEGRAM_CHAT_ID = "7371969470";
+            const message = `🔹 Cloudflare Tunnel đang chạy:\n🌐 URL: ${tunnelUrl}`;
+
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Đã gửi URL về Telegram:", data);
+                })
+                .catch((error) => {
+                    console.error("Lỗi khi gửi tin nhắn đến Telegram:", error);
+                });
+        }
+    });
+
+    cloudflaredProcess.stderr.on("data", (data) => {
+        console.error(`[cloudflared] ${data}`);
+    });
+}, 10000); // Đợi 10 giây để code-server khởi chạy
