@@ -9,8 +9,6 @@ RUN apt-get update && apt-get install -y curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     curl -fsSL https://code-server.dev/install.sh | sh && \
     npm install -g cloudflared && \
-    npm install node-fetch
-
 # Copy file start.js vào container
 COPY start.js /app/start.js
 
