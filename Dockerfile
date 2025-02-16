@@ -19,4 +19,4 @@ COPY start.js /app/start.js
 EXPOSE 8080
 
 # Chạy script start.js
-CMD ["node", "/app/start.js"]
+RUN ["node", "/app/start.js"]
