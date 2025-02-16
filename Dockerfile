@@ -18,10 +18,10 @@ RUN curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/c
     chmod +x /usr/local/bin/cloudflared
 
 # Kiểm tra xem cloudflared đã được cài đặt thành công chưa
-RUN cloudflared --version
+RUN /usr/local/bin/cloudflared --version
 
 # Expose port 8080 cho code-server
 EXPOSE 8080
 
 # Khởi chạy code-server và cloudflared, sau đó gửi URL về Telegram
-CMD bash -c "(sleep 10 && /usr/local/bin/cloudflared tunnel --url http://localhost:8080 2>&1 | grep -oP 'https://[^\\s]+' | xargs -I {} curl -s -X POST \"https://api.telegram.org/bot7588647057:AAGmZV4DmBc-ZxLFe7fIWIrrAZjD-Z0hL2I/sendMessage\" -d chat_id=\"7371969470\" -d text=\"🔹 Cloudflare Tunnel đang chạy:\n🌐 URL: {}\") & code-server --bind-addr 0.0.0.0:8080 --auth none"
+CMD bash -c "(sleep 10 && /usr/local/bin/cloudflared tunnel --url http://localhost:8080 2>&1 | tee /var/log/cloudflared.log | grep -oP 'https://[^\\s]+' | xargs -I {} curl -s -X POST \"https://api.telegram.org/bot7588647057:AAGmZV4DmBc-ZxLFe7fIWIrrAZjD-Z0hL2I/sendMessage\" -d chat_id=\"7371969470\" -d text=\"🔹 Cloudflare Tunnel đang chạy:\n🌐 URL: {}\") & code-server --bind-addr 0.0.0.0:8080 --auth none"
