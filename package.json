@@ -1,0 +1,10 @@
+{
+  "name": "vs-code-docker",
+  "version": "1.0.0",
+  "description": "VS Code Server chạy trên Akash",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js"
+  },
+  "dependencies": {}
+}
