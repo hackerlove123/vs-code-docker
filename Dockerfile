@@ -4,13 +4,16 @@ FROM node:latest
 # Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Cài đặt code-server và cloudflared
+# Cài đặt các công cụ cần thiết
 RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://code-server.dev/install.sh | sh && \
-    npm install -g cloudflared node-fetch && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-#Copy file start.js vào container
+# Cài đặt code-server, cloudflared và node-fetch
+RUN curl -fsSL https://code-server.dev/install.sh | sh && \
+    npm install -g cloudflared && \
+    npm install node-fetch
+
+# Copy file start.js vào container
 COPY start.js /app/start.js
 
 # Expose port 8080 cho code-server
