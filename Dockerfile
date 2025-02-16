@@ -19,5 +19,5 @@ COPY start.js /app/start.js
 # Expose port 8080 cho code-server
 EXPOSE 8080
 
-# Khởi chạy script start.js
-CMD ["node", "/app/start.js"]
+# Chạy script start.js liên tục với tail -f
+RUN ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
