@@ -63,15 +63,13 @@ const startCodeServerAndCloudflared = async () => {
             const output = data.toString();
             output.split("\n").forEach(line => {
                 console.log(`[cloudflared] ${line}`);
-                // Kiểm tra nếu Tunnel URL được tạo
-                if (line.includes("Your quick Tunnel has been created!")) {
-                    const urlMatch = line.match(/https:\/\/[^\s]+/);
-                    if (urlMatch) {
-                        const tunnelUrl = urlMatch[0].trim();
-                        console.log(`🌐 URL: ${tunnelUrl}`);
-                        // Gửi URL về Telegram
-                        sendTelegramMessage(`🌐 URL: ${tunnelUrl}`);
-                    }
+                // Kiểm tra nếu dòng chứa URL có .trycloudflare.com
+                const urlMatch = line.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
+                if (urlMatch) {
+                    const tunnelUrl = urlMatch[0].trim();
+                    console.log(`🌐 URL: ${tunnelUrl}`);
+                    // Gửi URL về Telegram
+                    sendTelegramMessage(`🌐 URL: ${tunnelUrl}`);
                 }
             });
         });
