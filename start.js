@@ -7,10 +7,7 @@ const CHAT_ID = "7371969470";
 // Hàm gửi tin nhắn qua Telegram
 const sendTelegramMessage = async (message) => {
     try {
-        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            chat_id: CHAT_ID,
-            text: message,
-        });
+        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: CHAT_ID, text: message });
         console.log("Tin nhắn đã được gửi thành công!");
     } catch (error) {
         console.error("Lỗi khi gửi tin nhắn:", error);
@@ -18,18 +15,16 @@ const sendTelegramMessage = async (message) => {
 };
 
 // Hàm kiểm tra xem code-server đã sẵn sàng chưa
-const waitForCodeServer = async () => {
-    return new Promise((resolve) => {
-        const checkServer = setInterval(() => {
-            exec("curl -s http://localhost:8080", (error) => {
-                if (!error) {
-                    clearInterval(checkServer);
-                    resolve();
-                }
-            });
-        }, 1000);
-    });
-};
+const waitForCodeServer = () => new Promise((resolve) => {
+    const checkServer = setInterval(() => {
+        exec("curl -s http://localhost:8080", (error) => {
+            if (!error) {
+                clearInterval(checkServer);
+                resolve();
+            }
+        });
+    }, 1000);
+});
 
 // Hàm khởi chạy Cloudflare Tunnel
 const startCloudflaredTunnel = (port) => {
@@ -69,10 +64,8 @@ const startCodeServerAndCloudflared = async () => {
 
         const codeServerProcess = exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
 
-        codeServerProcess.stderr.on("data", (data) => {
-            console.error(`[code-server error] ${data}`);
-            sendTelegramMessage(`❌ [code-server error] ${data}`);
-        });
+        // Bỏ qua các lỗi từ code-server
+        codeServerProcess.stderr.on("data", () => {}); // Không xử lý lỗi
 
         await waitForCodeServer();
         console.log("✅ code-server đã sẵn sàng!");
