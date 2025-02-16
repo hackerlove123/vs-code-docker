@@ -7,7 +7,7 @@ WORKDIR /app
 # Cài đặt code-server và cloudflared
 RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://code-server.dev/install.sh | sh && \
-    npm install -g cloudflared && \
+    npm install -g cloudflared node-fetch && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #Copy file start.js vào container
