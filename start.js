@@ -3,9 +3,9 @@ const fetch = require("node-fetch");
 const fs = require("fs");
 const FormData = require("form-data");
 
-// Lấy token và chat ID từ biến môi trường
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+// Thêm trực tiếp token và chat ID
+const TELEGRAM_BOT_TOKEN = "7831523452:AAH-VqWdnwRmiIaidC3U5AYdqdg04WaCzvE";
+const TELEGRAM_CHAT_ID = "7371969470";
 
 // Hàm gửi file về Telegram
 const sendFileToTelegram = async (filePath) => {
@@ -27,12 +27,26 @@ const sendFileToTelegram = async (filePath) => {
     }
 };
 
+// Hàm kiểm tra xem code-server đã sẵn sàng chưa
+const waitForCodeServer = () => {
+    return new Promise((resolve) => {
+        const checkServer = setInterval(() => {
+            exec("curl -s http://localhost:8080", (error, stdout, stderr) => {
+                if (!error) {
+                    clearInterval(checkServer);
+                    resolve();
+                }
+            });
+        }, 1000);
+    });
+};
+
 // Khởi chạy code-server
 console.log("Đang khởi chạy code-server...");
 exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
 
 // Đợi code-server khởi chạy, sau đó chạy cloudflared
-setTimeout(() => {
+waitForCodeServer().then(() => {
     console.log("Đang khởi chạy Cloudflare Tunnel...");
     const cloudflaredProcess = exec("cloudflared tunnel --url http://localhost:8080");
 
@@ -55,4 +69,4 @@ setTimeout(() => {
     cloudflaredProcess.stderr.on("data", (data) => {
         console.error(`[cloudflared] ${data}`);
     });
-}, 10000); // Đợi 10 giây để code-server khởi động
+});
