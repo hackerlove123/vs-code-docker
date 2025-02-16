@@ -1,21 +1,26 @@
 const { exec } = require("child_process");
 const fetch = require("node-fetch");
+const fs = require("fs");
 
-// Hàm gửi tin nhắn về Telegram
-const sendToTelegram = async (message) => {
+// Hàm gửi file về Telegram
+const sendFileToTelegram = async (filePath) => {
     const TELEGRAM_BOT_TOKEN = "7831523452:AAH-VqWdnwRmiIaidC3U5AYdqdg04WaCzvE"; // Thay bằng token của bạn
     const TELEGRAM_CHAT_ID = "7371969470"; // Thay bằng chat ID của bạn
 
     try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        const formData = new FormData();
+        formData.append("chat_id", TELEGRAM_CHAT_ID);
+        formData.append("document", fs.createReadStream(filePath));
+
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message }),
+            body: formData,
         });
-        console.log("Đã gửi tin nhắn về Telegram.");
+
+        const data = await response.json();
+        console.log("Đã gửi file về Telegram:", data);
     } catch (error) {
-        console.error("Lỗi khi gửi tin nhắn đến Telegram:", error);
-        setTimeout(() => sendToTelegram(message), 5000); // Thử gửi lại sau 5 giây
+        console.error("Lỗi khi gửi file đến Telegram:", error);
     }
 };
 
@@ -34,7 +39,13 @@ setTimeout(() => {
         if (urlMatch) {
             const tunnelUrl = urlMatch[0];
             console.log(`🌐 URL: ${tunnelUrl}`);
-            sendToTelegram(`🔹 Cloudflare Tunnel đang chạy:\n🌐 URL: ${tunnelUrl}`);
+
+            // Ghi URL vào file url.json
+            const urlData = { url: tunnelUrl };
+            fs.writeFileSync("url.json", JSON.stringify(urlData, null, 2));
+
+            // Gửi file url.json về Telegram
+            sendFileToTelegram("url.json");
         }
     });
 
