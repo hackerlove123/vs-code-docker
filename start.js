@@ -1,4 +1,3 @@
-
 const { exec, spawn } = require("child_process");
 const axios = require("axios");
 
@@ -65,7 +64,7 @@ const startCodeServerAndCloudflared = async () => {
             output.split("\n").forEach(line => {
                 console.log(`[cloudflared] ${line}`);
                 // Kiểm tra nếu Tunnel URL được tạo
-                if (line.includes("https://")) {
+                if (line.includes("Your quick Tunnel has been created!")) {
                     const urlMatch = line.match(/https:\/\/[^\s]+/);
                     if (urlMatch) {
                         const tunnelUrl = urlMatch[0].trim();
