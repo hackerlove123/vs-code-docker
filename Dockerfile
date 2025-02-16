@@ -4,13 +4,8 @@ FROM node:latest
 # Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Cài đặt curl, code-server, cloudflared và các công cụ cần thiết
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -fsSL https://code-server.dev/install.sh | sh && \
-    npm install -g cloudflared && \
-    npm install axios && \
-    rm -rf /var/lib/apt/lists/*
+# Cài đặt code-server và cloudflared bằng npm/npx
+RUN npm install -g code-server cloudflared axios
 
 # Copy file start.js vào container
 COPY start.js /app/start.js
