@@ -16,4 +16,4 @@ COPY start.js /app/start.js
 EXPOSE 8080
 
 # Chạy script start.js liên tục với tail -f 
-CMD ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
+RUN ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
