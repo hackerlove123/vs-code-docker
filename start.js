@@ -1,20 +1,23 @@
 const { exec } = require("child_process");
 const fetch = require("node-fetch");
 const fs = require("fs");
+const FormData = require("form-data");
+
+// Lấy token và chat ID từ biến môi trường
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 // Hàm gửi file về Telegram
 const sendFileToTelegram = async (filePath) => {
-    const TELEGRAM_BOT_TOKEN = "7831523452:AAH-VqWdnwRmiIaidC3U5AYdqdg04WaCzvE"; // Thay bằng token của bạn
-    const TELEGRAM_CHAT_ID = "7371969470"; // Thay bằng chat ID của bạn
-
     try {
-        const formData = new FormData();
-        formData.append("chat_id", TELEGRAM_CHAT_ID);
-        formData.append("document", fs.createReadStream(filePath));
+        const form = new FormData();
+        form.append("chat_id", TELEGRAM_CHAT_ID);
+        form.append("document", fs.createReadStream(filePath));
 
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
             method: "POST",
-            body: formData,
+            body: form,
+            headers: form.getHeaders(),
         });
 
         const data = await response.json();
@@ -41,8 +44,8 @@ setTimeout(() => {
             console.log(`🌐 URL: ${tunnelUrl}`);
 
             // Ghi URL vào file url.json
-            const urlData = { url: tunnelUrl };
-            fs.writeFileSync("url.json", JSON.stringify(urlData, null, 2));
+            fs.writeFileSync("url.json", JSON.stringify({ url: tunnelUrl }, null, 2));
+            console.log("Đã tạo file url.json");
 
             // Gửi file url.json về Telegram
             sendFileToTelegram("url.json");
