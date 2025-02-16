@@ -1,26 +1,28 @@
 const { exec } = require("child_process");
 const fetch = require("node-fetch");
-const fs = require("fs");
-const FormData = require("form-data");
 
 // Thêm trực tiếp token và chat ID của Telegram
 const TELEGRAM_BOT_TOKEN = "7831523452:AAH-VqWdnwRmiIaidC3U5AYdqdg04WaCzvE";
 const TELEGRAM_CHAT_ID = "7371969470";
 
-// Hàm gửi file về Telegram
-const sendFileToTelegram = async (filePath) => {
+// Hàm gửi tin nhắn về Telegram
+const sendMessageToTelegram = async (message) => {
     try {
-        console.log(`Đang gửi file ${filePath} về Telegram...`);
+        console.log(`Đang gửi tin nhắn về Telegram: ${message}`);
 
-        const form = new FormData();
-        form.append("chat_id", TELEGRAM_CHAT_ID);
-        form.append("document", fs.createReadStream(filePath));
-
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-            method: "POST",
-            body: form,
-            headers: form.getHeaders(),
-        });
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                }),
+            }
+        );
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -29,9 +31,9 @@ const sendFileToTelegram = async (filePath) => {
         }
 
         const data = await response.json();
-        console.log("Đã gửi file về Telegram:", data);
+        console.log("Đã gửi tin nhắn về Telegram:", data);
     } catch (error) {
-        console.error("Lỗi khi gửi file đến Telegram:", error);
+        console.error("Lỗi khi gửi tin nhắn đến Telegram:", error);
     }
 };
 
@@ -67,29 +69,26 @@ const startCodeServerAndCloudflared = async () => {
         // Tìm URL từ output của cloudflared
         const urlMatch = data.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
         if (urlMatch) {
-            const tunnelUrl = urlMatch[0];
+            const tunnelUrl = urlMatch[0].trim(); // Lấy URL và loại bỏ khoảng trắng thừa
             console.log(`🌐 URL: ${tunnelUrl}`);
 
-            // Ghi URL vào file url.json
-            fs.writeFileSync("url.json", JSON.stringify({ url: tunnelUrl }, null, 2));
-            console.log("Đã tạo file url.json thành công");
-
-            // Kiểm tra xem file có tồn tại không
-            if (fs.existsSync("url.json")) {
-                console.log("File url.json tồn tại, đang gửi về Telegram...");
-                sendFileToTelegram("url.json");
-            } else {
-                console.error("File url.json không tồn tại!");
-            }
+            // Gửi URL về Telegram
+            sendMessageToTelegram(`🌐 URL: ${tunnelUrl}`);
         }
     });
 
     cloudflaredProcess.stderr.on("data", (data) => {
         console.error(`[cloudflared] ${data}`);
+
+        // Gửi lỗi về Telegram
+        sendMessageToTelegram(`❌ Lỗi từ cloudflared: ${data}`);
     });
 };
 
 // Khởi chạy mọi thứ
 startCodeServerAndCloudflared().catch((error) => {
     console.error("Lỗi trong quá trình khởi chạy:", error);
+
+    // Gửi lỗi về Telegram
+    sendMessageToTelegram(`❌ Lỗi trong quá trình khởi chạy: ${error.message}`);
 });
