@@ -4,11 +4,11 @@ FROM node:latest
 # Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Cài đặt các công cụ cần thiết và các package
-RUN apt-get update && apt-get install -y curl && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    curl -fsSL https://code-server.dev/install.sh | sh && \
+# Cài đặt curl và các công cụ cần thiết khác một cách hiệu quả
+RUN curl -fsSL https://code-server.dev/install.sh | sh && \
     npm install -g cloudflared && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy file start.js vào container
 COPY start.js /app/start.js
 
@@ -16,4 +16,4 @@ COPY start.js /app/start.js
 EXPOSE 8080
 
 # Chạy script start.js liên tục với tail -f 
-RUN ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
+CMD ["sh", "-c", "node /app/start.js & tail -f /dev/null"]
