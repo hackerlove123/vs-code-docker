@@ -1,4 +1,5 @@
 const { exec, spawn } = require("child_process");
+const axios = require("axios");
 
 // Hàm kiểm tra xem code-server đã sẵn sàng chưa
 const waitForCodeServer = () => {
@@ -12,6 +13,23 @@ const waitForCodeServer = () => {
             });
         }, 1000);
     });
+};
+
+// Hàm gửi tin nhắn qua Telegram
+const sendTelegramMessage = async (message) => {
+    const botToken = "7828296793:AAEw4A7NI8tVrdrcR0TQZXyOpNSPbJmbGUU";
+    const chatId = "7371969470"; // Thay thế bằng chat ID của bạn
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+    try {
+        await axios.post(url, {
+            chat_id: chatId,
+            text: message,
+        });
+        console.log("Tin nhắn đã được gửi thành công!");
+    } catch (error) {
+        console.error("Lỗi khi gửi tin nhắn:", error);
+    }
 };
 
 // Hàm khởi chạy code-server và cloudflared
@@ -37,6 +55,8 @@ const startCodeServerAndCloudflared = async () => {
                 if (urlMatch) {
                     const tunnelUrl = urlMatch[0].trim();
                     console.log(`🌐 URL: ${tunnelUrl}`);
+                    // Gửi URL về Telegram
+                    sendTelegramMessage(`🌐 URL: ${tunnelUrl}`);
                 }
             }
         });
