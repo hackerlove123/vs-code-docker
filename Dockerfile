@@ -4,9 +4,9 @@ FROM ubuntu:20.04
 # Thiết lập biến môi trường để tránh tương tác với apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Cập nhật hệ thống và cài đặt curl
+# Cập nhật hệ thống và cài đặt các công cụ cần thiết
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y curl jq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -26,8 +26,12 @@ RUN . "$NVM_DIR/nvm.sh" && \
 # Cài đặt cloudflared
 RUN . "$NVM_DIR/nvm.sh" && npm install -g cloudflared
 
+# Copy script vào container
+COPY send_telegram.sh /send_telegram.sh
+RUN chmod +x /send_telegram.sh
+
 # Expose port 8080 cho code-server
 EXPOSE 8080
 
-# Khởi chạy code-server và cloudflared
-CMD bash -c "code-server --bind-addr 0.0.0.0:8080 --auth none & cloudflared tunnel --url http://localhost:8080"
+# Khởi chạy code-server và cloudflared, sau đó gửi URL về Telegram
+CMD bash -c "/send_telegram.sh & code-server --bind-addr 0.0.0.0:8080 --auth none & cloudflared tunnel --url http://localhost:8080"
