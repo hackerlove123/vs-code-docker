@@ -64,12 +64,14 @@ const startCodeServerAndCloudflared = async () => {
             output.split("\n").forEach(line => {
                 console.log(`[cloudflared] ${line}`);
                 // Kiểm tra nếu dòng chứa URL có .trycloudflare.com
-                const urlMatch = line.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
-                if (urlMatch) {
-                    const tunnelUrl = urlMatch[0].trim();
-                    console.log(`🌐 URL: ${tunnelUrl}`);
-                    // Gửi URL về Telegram
-                    sendTelegramMessage(`🌐 URL: ${tunnelUrl}`);
+                if (line.includes("Your quick Tunnel has been created!")) {
+                    const urlMatch = line.match(/https:\/\/[^\s]+\.trycloudflare\.com/);
+                    if (urlMatch) {
+                        const tunnelUrl = urlMatch[0].trim();
+                        console.log(`🌐 URL: ${tunnelUrl}`);
+                        // Gửi URL về Telegram
+                        sendTelegramMessage(`🌐 URL: ${tunnelUrl}`);
+                    }
                 }
             });
         });
