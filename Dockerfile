@@ -1,6 +1,9 @@
 # Sử dụng image cơ sở Ubuntu 18.04
 FROM ubuntu:20.04
 
+# Thiết lập chế độ không tương tác
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Cài đặt các dependencies cần thiết
 RUN apt-get update && \
     apt-get install -y ca-certificates curl gnupg lsb-release && \
