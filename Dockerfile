@@ -1,5 +1,5 @@
 # Sử dụng image cơ sở Ubuntu 18.04
-FROM vm/ubuntu:18.04
+FROM ubuntu:20.04
 
 # Cài đặt các dependencies cần thiết
 RUN apt-get update && \
@@ -11,13 +11,6 @@ RUN apt-get update && \
     apt-get install -y docker-ce docker-ce-cli containerd.io
 
 
-# Cài đặt Node.js 16.x (tương thích với Ubuntu 18.04)
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g npm@8
-    
 # Cài đặt VSCode Server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
