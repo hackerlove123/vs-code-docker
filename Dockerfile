@@ -1,9 +1,6 @@
 # Sử dụng Ubuntu 20.04 làm nền tảng
 FROM ubuntu:20.04
 
-# Chạy dưới quyền root
-USER root
-
 # Thiết lập chế độ không tương tác
 ENV DEBIAN_FRONTEND=noninteractive
 
