@@ -18,11 +18,11 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Cài đặt Buildah
+# Cài đặt Podman
 RUN echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list && \
     curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | apt-key add - && \
     apt-get update && \
-    apt-get install -y buildah && \
+    apt-get install -y podman && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
