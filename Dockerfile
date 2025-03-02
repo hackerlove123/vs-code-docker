@@ -1,36 +1,29 @@
+# Sử dụng Ubuntu 20.04 làm nền tảng
 FROM ubuntu:20.04
 
-# Thiết lập chế độ không tương tác và múi giờ
+# Thiết lập chế độ không tương tác
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Ho_Chi_Minh
 
 # Cập nhật hệ thống và cài đặt các dependencies cần thiết
 RUN apt-get update && \
-    apt-get install -y \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release \
-        iptables \
-        tzdata && \
-    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    dpkg-reconfigure --frontend noninteractive tzdata && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Cài đặt Podman
-RUN echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list && \
-    curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | apt-key add - && \
+    apt-get install -y ca-certificates curl gnupg lsb-release iptables && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
-    apt-get install -y podman && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y docker-ce docker-ce-cli containerd.io && \
+    apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata
 
-# Cài đặt code-server
+# Kích hoạt Docker daemon bên trong container
+RUN dockerd &
+
+# Cài đặt VSCode Server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # Mở cổng 8080
 EXPOSE 8080
 
 # Chạy code-server khi container khởi động
-CMD ["code-server", "--bind-addr", "0.0.0.0:8080", "--auth", "none"]
+CMD ["sh", "-c", "dockerd & sleep 3 && code-server --bind-addr 0.0.0.0:8080 --auth none"]
