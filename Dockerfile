@@ -1,6 +1,9 @@
 # Sử dụng image code-server làm nền tảng
 FROM codercom/code-server:latest
 
+# Chạy với quyền root để có thể cài đặt phần mềm
+USER root
+
 # Cài đặt các dependencies cần thiết và Docker
 RUN apt-get update && \
     apt-get install -y ca-certificates curl gnupg lsb-release && \
@@ -14,5 +17,5 @@ RUN apt-get update && \
 # Mở cổng 8080 để truy cập code-server
 EXPOSE 8080
 
-# Chạy code-server khi container khởi động
+# Chạy code-server khi container khởi động dưới quyền root
 CMD ["code-server", "--bind-addr", "0.0.0.0:8080", "--auth", "none"]
