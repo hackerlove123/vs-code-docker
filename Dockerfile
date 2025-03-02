@@ -15,6 +15,9 @@ RUN apt-get update && \
     apt-get update && \
     ln -fs /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime 
 
+# Kích hoạt Docker daemon bên trong container
+RUN dockerd &
+
 # Cài đặt VSCode Server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
