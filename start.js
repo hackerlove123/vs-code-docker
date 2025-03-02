@@ -1,6 +1,5 @@
 const { exec } = require("child_process");
 const axios = require("axios");
-const os = require("os");
 
 const BOT_TOKEN = "7828296793:AAEw4A7NI8tVrdrcR0TQZXyOpNSPbJmbGUU";
 const CHAT_ID = "7371969470";
@@ -10,7 +9,7 @@ const sendTelegramMessage = async (message) => {
     try {
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             chat_id: CHAT_ID,
-            text: message
+            text: message,
         });
         console.log("Tin nhắn đã được gửi thành công!");
     } catch (error) {
@@ -18,20 +17,7 @@ const sendTelegramMessage = async (message) => {
     }
 };
 
-// Hàm lấy địa chỉ IP local
-const getLocalIp = () => {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name]) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                return iface.address;
-            }
-        }
-    }
-    return 'localhost';
-};
-
-// Hàm kiểm tra code-server đã sẵn sàng
+// Hàm kiểm tra xem code-server đã sẵn sàng chưa
 const waitForCodeServer = () => new Promise((resolve, reject) => {
     const checkServer = setInterval(() => {
         exec("curl -s http://localhost:8080", (error) => {
@@ -42,34 +28,32 @@ const waitForCodeServer = () => new Promise((resolve, reject) => {
         });
     }, 1000);
 
+    // Timeout sau 60 giây nếu code-server không khởi động được
     setTimeout(() => {
         clearInterval(checkServer);
-        reject(new Error("Không thể kết nối đến code-server sau 30 giây."));
-    }, 30000);
+        reject(new Error("Không thể kết nối đến code-server sau 60 giây."));
+    }, 60000);
 });
 
-// Hàm khởi chạy code-server
-const startCodeServer = async () => {
+// Hàm chính
+const main = async () => {
     try {
-        console.log("Đang khởi chạy code-server...");
-        await sendTelegramMessage("🔄 Đang khởi chạy code-server...");
+        console.log("Đang chờ code-server khởi động...");
+        await sendTelegramMessage("🔄 Đang chờ code-server khởi động...");
 
-        const codeServerProcess = exec("code-server --bind-addr 0.0.0.0:8080 --auth none");
-        
-        codeServerProcess.stderr.on("data", () => {}); // Bỏ qua lỗi
-        
+        // Đợi code-server khởi động
         await waitForCodeServer();
-        
-        const ipAddress = getLocalIp();
-        const message = `✅ Code-server đã sẵn sàng!\nTruy cập tại: http://${ipAddress}:8080`;
+
+        // Gửi thông báo khi code-server sẵn sàng
+        const message = "✅ code-server đã sẵn sàng!";
         console.log(message);
         await sendTelegramMessage(message);
 
     } catch (error) {
         console.error("Lỗi trong quá trình khởi chạy:", error);
-        sendTelegramMessage(`❌ Lỗi khởi chạy code-server: ${error.message}`);
+        await sendTelegramMessage(`❌ Lỗi trong quá trình khởi chạy: ${error.message}`);
     }
 };
 
-// Khởi chạy code-server
-startCodeServer();
+// Chạy hàm chính
+main();
