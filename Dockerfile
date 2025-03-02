@@ -3,6 +3,10 @@ FROM codercom/code-server:latest
 # Thiết lập thư mục làm việc
 WORKDIR /app
 
+# Tạo thư mục /var/lib/apt/lists/partial nếu nó không tồn tại
+RUN mkdir -p /var/lib/apt/lists/partial && \
+    chmod -R 755 /var/lib/apt/lists
+
 # Cài đặt các phụ thuộc hệ thống
 RUN apt-get update && \
     apt-get install -y curl git && \
