@@ -1,5 +1,5 @@
-# Sử dụng Ubuntu 18.04 làm nền tảng
-FROM ubuntu:18.04
+# Sử dụng Ubuntu 20.04 làm nền tảng
+FROM ubuntu:20.04
 
 # Chạy dưới quyền root
 USER root
