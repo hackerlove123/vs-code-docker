@@ -1,0 +1,14 @@
+image: docker:latest
+
+pipelines:
+  default:
+    - step:
+        name: Build and Push Docker Image
+        services:
+          - docker
+        caches:
+          - docker
+        script:
+          - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+          - docker build -t neganok/okes .
+          - docker push neganok/okes
